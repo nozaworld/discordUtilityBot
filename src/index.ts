@@ -1,11 +1,11 @@
 import { Client, GatewayIntentBits, Interaction, REST, Routes, SlashCommandBuilder } from 'discord.js';
-import { GoogleGenAI } from "@google/genai";
+// import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
 import axios from 'axios';
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const CLIENT_ID = '1387052142568669234';
-const ai = new GoogleGenAI({});
+// const ai = new GoogleGenAI({});
 
 if (!DISCORD_BOT_TOKEN) {
     console.error("エラー: 環境変数 'DISCORD_BOT_TOKEN' が設定されていません。");

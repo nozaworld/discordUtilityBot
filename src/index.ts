@@ -1,12 +1,10 @@
-import { Client, GatewayIntentBits, Interaction, REST, Routes, SlashCommandBuilder } from 'discord.js'; // ライブラリ
+import { Client, GatewayIntentBits, Interaction, REST, Routes, SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'; // ライブラリ
 import 'dotenv/config'; // 環境変数の読み込み
 import axios from 'axios'; // HTTPリクエストのためのライブラリ
-// import { GoogleGenAI } from "@google/genai";
  
 // 環境変数からDiscordのBotトークンとクライアントIDを取得
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const CLIENT_ID = '1387052142568669234';
-// const ai = new GoogleGenAI({});
 
 // 環境変数が設定されていない場合のエラーハンドリング
 if (!DISCORD_BOT_TOKEN) {
@@ -29,11 +27,6 @@ const client = new Client({
 
 // スラッシュコマンドの定義
 const commands = [
-    { 
-        name: 'goodmorning', 
-        description: 'おはようと返します',
-    },
-
     {
         name: 'coolguy',
         description: '画像を表示します',
@@ -48,15 +41,10 @@ const commands = [
                 .setRequired(true)
         )
         .toJSON(),
-    // new SlashCommandBuilder()
-    //     .setName('chatbot')
-    //     .setDescription('あなたの質問に答えます')
-    //     .addStringOption(option =>
-    //         option.setName('question')
-    //             .setDescription('例：今日の晩御飯はなんですか？')
-    //             .setRequired(true)
-    //     )
-    //     .toJSON(),
+    new SlashCommandBuilder()
+        .setName('sendmessage')
+        .setDescription('複数行のメッセージをモダールで送信します')
+        .toJSON(),
 ];
 
 // Botがログインしたときのイベントリスナー
@@ -78,47 +66,65 @@ client.once('ready', async () => {
 
 // インタラクションの処理
 client.on('interactionCreate', async (interaction: Interaction) => {
-    if (!interaction.isCommand()) return;
+    if (interaction.isCommand()) {
+        const { commandName } = interaction;
 
-    const { commandName } = interaction;
+        if (commandName === 'coolguy') {
+            const filePath = 'images/coolguy.jpeg';
+            await interaction.reply({ files: [filePath] });
+        } 
+        else if (commandName === 'weather') {
+            if (!interaction.isChatInputCommand()) {
+                console.error('weather コマンドがチャット入力コマンドとして実行されませんでした。');
+                return;
+            }
+            await interaction.deferReply();
+            const city = interaction.options.getString('city', true);
 
-    if (commandName === 'goodmorning') {
-        await interaction.reply('おはよう');
-    }
-    else if (commandName === 'coolguy') {
-        const filePath = 'images/coolguy.jpeg';
-        await interaction.reply({ files: [filePath] });
-    } 
-    else if (commandName === 'weather') {
-        if (!interaction.isChatInputCommand()) {
-            console.error('weather コマンドがチャット入力コマンドとして実行されませんでした。');
-            return;
+            const weatherApiUrl = `https://wttr.in/${encodeURIComponent(city)}?lang=ja&format=%l:+%t,+%c+%C%0D%0A降水量:%P%0D%0A風速:%w%0D%0A湿度:%h%0D%0A天気:%x`;
+
+            try {
+                const response = await axios.get(weatherApiUrl);
+                const weatherText = response.data;
+
+                await interaction.editReply(`**${city}** の天気予報:\n\`\`\`\n${weatherText}\n\`\`\``);
+            } catch (error) {
+                console.error('天気予報の取得中にエラーが発生しました:', error);
+                await interaction.editReply('天気予報の取得に失敗しました。都市名が正しいか確認してください。');
+            }
         }
-        await interaction.deferReply();
-        const city = interaction.options.getString('city', true);
+        else if (commandName === 'sendmessage') {
+            if (!interaction.isChatInputCommand()) {
+                console.error('sendmessage コマンドがチャット入力コマンドとして実行されませんでした。');
+                return;
+            }
 
-        const weatherApiUrl = `https://wttr.in/${encodeURIComponent(city)}?lang=ja&format=%l:+%t,+%c+%C%0D%0A降水量:%P%0D%0A風速:%w%0D%0A湿度:%h%0D%0A天気:%x`;
+            const message = new ModalBuilder()
+                .setCustomId('myMultiLinemessage')
+                .setTitle('メッセージを入力してください');
 
-        try {
-            const response = await axios.get(weatherApiUrl);
-            const weatherText = response.data;
+            const multiLineInput = new TextInputBuilder()
+                .setCustomId('multiLineMessageInput')
+                .setLabel("複数行のメッセージ")
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true)
+                .setPlaceholder('ここにメッセージを入力してください...');
 
-            await interaction.editReply(`**${city}** の天気予報:\n\`\`\`\n${weatherText}\n\`\`\``);
-        } catch (error) {
-            console.error('天気予報の取得中にエラーが発生しました:', error);
-            await interaction.editReply('天気予報の取得に失敗しました。都市名が正しいか確認してください。');
+            const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(multiLineInput);
+            message.addComponents(actionRow);
+            await interaction.showModal(message);
+        }
+    } else if (interaction.isModalSubmit()) {
+        if (interaction.customId === 'myMultiLinemessage') { 
+            await interaction.deferReply({ ephemeral: false }); 
+            setTimeout(async () => {
+                const messageFrommessage = interaction.fields.getTextInputValue('multiLineMessageInput');
+                await interaction.editReply(`<@${interaction.user.id}>からのメッセージだにゅう〜\n---------------\n${messageFrommessage}`);
+            }, 10000);
+            
         }
     }
-    // else if (commandName === 'chatbot') {
-    //     if (!interaction.isChatInputCommand()) {
-    //         console.error('chatbot コマンドがチャット入力コマンドとして実行されませんでした。');
-    //         return;
-    //     }
-    //     await interaction.deferReply();
-    //     const question = interaction.options.getString('question', true);
-    //     }
-    }
-);
+});
 
 // Botのログイン
 client.login(DISCORD_BOT_TOKEN);

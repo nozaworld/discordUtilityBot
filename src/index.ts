@@ -1,12 +1,14 @@
-import { Client, GatewayIntentBits, Interaction, REST, Routes, SlashCommandBuilder } from 'discord.js';
+import { Client, GatewayIntentBits, Interaction, REST, Routes, SlashCommandBuilder } from 'discord.js'; // ライブラリ
 // import { GoogleGenAI } from "@google/genai";
-import 'dotenv/config';
-import axios from 'axios';
-
+import 'dotenv/config'; // 環境変数の読み込み
+import axios from 'axios'; // HTTPリクエストのためのライブラリ
+ 
+// 環境変数からDiscordのBotトークンとクライアントIDを取得
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const CLIENT_ID = '1387052142568669234';
 // const ai = new GoogleGenAI({});
 
+// 環境変数が設定されていない場合のエラーハンドリング
 if (!DISCORD_BOT_TOKEN) {
     console.error("エラー: 環境変数 'DISCORD_BOT_TOKEN' が設定されていません。");
     process.exit(1);
@@ -16,6 +18,7 @@ if (!CLIENT_ID) {
     process.exit(1);
 }
 
+// Discordクライアントの初期化
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -24,9 +27,10 @@ const client = new Client({
     ],
 });
 
+// スラッシュコマンドの定義
 const commands = [
-    {
-        name: 'goodmorning',
+    { 
+        name: 'goodmorning', 
         description: 'おはようと返します',
     },
     {
@@ -53,6 +57,7 @@ const commands = [
         .toJSON(),
 ];
 
+// Botがログインしたときのイベントリスナー
 client.once('ready', async () => {
     console.log(`Botがログインしました: ${client.user?.tag}`);
     const rest = new REST({ version: '10' }).setToken(DISCORD_BOT_TOKEN as string);
@@ -68,6 +73,8 @@ client.once('ready', async () => {
         console.error('スラッシュコマンドの登録中にエラーが発生しました:', error);
     }
 });
+
+// インタラクションの処理
 client.on('interactionCreate', async (interaction: Interaction) => {
     if (!interaction.isCommand()) return;
 
@@ -109,4 +116,5 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     }
 );
 
+// Botのログイン
 client.login(DISCORD_BOT_TOKEN);

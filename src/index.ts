@@ -103,6 +103,13 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 .setCustomId('myMultiLinemessage')
                 .setTitle('メッセージを入力してください');
 
+            const sendTime = new TextInputBuilder()
+                .setCustomId('timeInput')
+                .setLabel("送信時間を入力してください")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setPlaceholder('ここに送信時間を入力してください...（例）2025/12/30/12:00');
+
             const multiLineInput = new TextInputBuilder()
                 .setCustomId('multiLineMessageInput')
                 .setLabel("複数行のメッセージ")
@@ -110,17 +117,22 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 .setRequired(true)
                 .setPlaceholder('ここにメッセージを入力してください...');
 
-            const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(multiLineInput);
-            message.addComponents(actionRow);
+            const actionRowMessage = new ActionRowBuilder<TextInputBuilder>().addComponents(multiLineInput);
+            const actionRowTime = new ActionRowBuilder<TextInputBuilder>().addComponents(sendTime);
+            message.addComponents(actionRowMessage);
+            message.addComponents(actionRowTime);
             await interaction.showModal(message);
         }
     } else if (interaction.isModalSubmit()) {
         if (interaction.customId === 'myMultiLinemessage') { 
-            await interaction.deferReply({ ephemeral: false }); 
+            await interaction.deferReply({ ephemeral: false });
+            const inputTime = interaction.fields.getTextInputValue('timeInput');
+            const delayTime = new Date(inputTime);
+            
             setTimeout(async () => {
                 const messageFrommessage = interaction.fields.getTextInputValue('multiLineMessageInput');
                 await interaction.editReply(`<@${interaction.user.id}>からのメッセージだにゅう〜\n---------------\n${messageFrommessage}`);
-            }, 10000);
+            }, delayTime.getTime());
             
         }
     }

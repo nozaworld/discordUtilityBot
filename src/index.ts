@@ -125,14 +125,21 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         }
     } else if (interaction.isModalSubmit()) {
         if (interaction.customId === 'myMultiLinemessage') { 
-            await interaction.deferReply({ ephemeral: false });
+            await interaction.deferReply({ ephemeral: false }); 
             const inputTime = interaction.fields.getTextInputValue('timeInput');
             const delayTime = new Date(inputTime);
-            
+            const now = new Date();
+            const ms = delayTime.getTime() - now.getTime();
+
+            if (isNaN(delayTime.getTime()) || ms < 0) {
+                await interaction.editReply('送信時間が無効です。正しい形式で未来の日時を入力してください。');
+                return;
+            }
+
             setTimeout(async () => {
                 const messageFrommessage = interaction.fields.getTextInputValue('multiLineMessageInput');
                 await interaction.editReply(`<@${interaction.user.id}>からのメッセージだにゅう〜\n---------------\n${messageFrommessage}`);
-            }, delayTime.getTime());
+            }, ms);
             
         }
     }

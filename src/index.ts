@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, Interaction, REST, Routes, SlashCommandBuilder } from 'discord.js'; // ライブラリ
-// import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config'; // 環境変数の読み込み
 import axios from 'axios'; // HTTPリクエストのためのライブラリ
+// import { GoogleGenAI } from "@google/genai";
  
 // 環境変数からDiscordのBotトークンとクライアントIDを取得
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
@@ -33,10 +33,12 @@ const commands = [
         name: 'goodmorning', 
         description: 'おはようと返します',
     },
+
     {
-        name: 'goodnight',
-        description: 'こんばんはと返します',
+        name: 'coolguy',
+        description: '画像を表示します',
     },
+
     new SlashCommandBuilder()
         .setName('weather')
         .setDescription('指定した都市の天気予報を表示します')
@@ -46,15 +48,15 @@ const commands = [
                 .setRequired(true)
         )
         .toJSON(),
-    new SlashCommandBuilder()
-        .setName('chatbot')
-        .setDescription('あなたの質問に答えます')
-        .addStringOption(option =>
-            option.setName('question')
-                .setDescription('例：今日の晩御飯はなんですか？')
-                .setRequired(true)
-        )
-        .toJSON(),
+    // new SlashCommandBuilder()
+    //     .setName('chatbot')
+    //     .setDescription('あなたの質問に答えます')
+    //     .addStringOption(option =>
+    //         option.setName('question')
+    //             .setDescription('例：今日の晩御飯はなんですか？')
+    //             .setRequired(true)
+    //     )
+    //     .toJSON(),
 ];
 
 // Botがログインしたときのイベントリスナー
@@ -82,8 +84,10 @@ client.on('interactionCreate', async (interaction: Interaction) => {
 
     if (commandName === 'goodmorning') {
         await interaction.reply('おはよう');
-    } else if (commandName === 'goodnight') {
-        await interaction.reply('こんばんは');
+    }
+    else if (commandName === 'coolguy') {
+        const filePath = 'images/coolguy.jpeg';
+        await interaction.reply({ files: [filePath] });
     } 
     else if (commandName === 'weather') {
         if (!interaction.isChatInputCommand()) {
@@ -105,14 +109,14 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             await interaction.editReply('天気予報の取得に失敗しました。都市名が正しいか確認してください。');
         }
     }
-    else if (commandName === 'chatbot') {
-        if (!interaction.isChatInputCommand()) {
-            console.error('chatbot コマンドがチャット入力コマンドとして実行されませんでした。');
-            return;
-        }
-        await interaction.deferReply();
-        const question = interaction.options.getString('question', true);
-        }
+    // else if (commandName === 'chatbot') {
+    //     if (!interaction.isChatInputCommand()) {
+    //         console.error('chatbot コマンドがチャット入力コマンドとして実行されませんでした。');
+    //         return;
+    //     }
+    //     await interaction.deferReply();
+    //     const question = interaction.options.getString('question', true);
+    //     }
     }
 );
 

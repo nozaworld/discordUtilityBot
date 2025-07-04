@@ -21,6 +21,9 @@ node_modules/
 # TypeScript build output
 /dist/
 
+# Cool Guy
+/images/
+
 # Local .vscode folder for settings/extensions
 .vscode/
 

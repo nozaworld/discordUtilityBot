@@ -43,7 +43,7 @@ const commands = [
         .toJSON(),
     new SlashCommandBuilder()
         .setName('sendmessage')
-        .setDescription('複数行のメッセージをモダールで送信します')
+        .setDescription('複数行のメッセージをフォームで送信します')
         .toJSON(),
 ];
 
@@ -100,7 +100,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             }
 
             const message = new ModalBuilder()
-                .setCustomId('myMultiLinemessage')
+                .setCustomId('multilineMessage')
                 .setTitle('メッセージを入力してください');
 
             const sendTime = new TextInputBuilder()
@@ -111,7 +111,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 .setPlaceholder('ここに送信時間を入力してください...（例）2025/12/30/12:00');
 
             const multiLineInput = new TextInputBuilder()
-                .setCustomId('multiLineMessageInput')
+                .setCustomId('multilineMessageInput')
                 .setLabel("複数行のメッセージ")
                 .setStyle(TextInputStyle.Paragraph)
                 .setRequired(true)
@@ -124,22 +124,22 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             await interaction.showModal(message);
         }
     } else if (interaction.isModalSubmit()) {
-        if (interaction.customId === 'myMultiLinemessage') { 
-            await interaction.deferReply({ ephemeral: false }); 
+        if (interaction.customId === 'multilineMessage') { 
+            await interaction.deferReply({ ephemeral: false }); //ephemeralがfalseの時に，コマンド使用者以外にもコマンド実行中のメッセージが見えるらしい　trueの時はそれが見えなくなるが，送りたいメッセージも見えなくなる
             const inputTime = interaction.fields.getTextInputValue('timeInput');
             const delayTime = new Date(inputTime);
-            const now = new Date();
-            const ms = delayTime.getTime() - now.getTime();
+            const currentTime = new Date();
+            const delayMilliseconds = delayTime.getTime() - currentTime.getTime();
 
-            if (isNaN(delayTime.getTime()) || ms < 0) {
+            if (isNaN(delayTime.getTime()) || delayMilliseconds < 0) {
                 await interaction.editReply('送信時間が無効です。正しい形式で未来の日時を入力してください。');
                 return;
             }
 
             setTimeout(async () => {
-                const messageFrommessage = interaction.fields.getTextInputValue('multiLineMessageInput');
-                await interaction.editReply(`<@${interaction.user.id}>からのメッセージだにゅう〜\n---------------\n${messageFrommessage}`);
-            }, ms);
+                const delayMessage = interaction.fields.getTextInputValue('multilineMessageInput');
+                await interaction.editReply(`<@${interaction.user.id}>からのメッセージだにゅう〜\n---------------\n${delayMessage}`);
+            }, delayMilliseconds);
             
         }
     }

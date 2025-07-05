@@ -5,5 +5,5 @@
 ## セットアップ
 
 ```bash
-git clone https://github.com/your-username/my-discord-bot-ts.git
+git clone https://github.com/nozaworld/my-discord-bot-ts.git
 cd my-discord-bot-ts
